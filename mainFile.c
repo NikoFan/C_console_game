@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#define size 32
 
-char customer_name[] = "";
+
+char customer_name[size];
 int customer_count;
 
 void clear() // очистка терминала
@@ -11,18 +13,86 @@ void clear() // очистка терминала
 	system("cls");
 }
 
+void error_message(int index_of_error)
+{
+	switch(index_of_error)
+	{
+		case(1):
+			printf("\tWARNING!!!\n  Please, set your name\n");
+			break;
+		case(2):
+			printf("\tWARNING\n  Number Enter Error\n");
+			break;
+		default:
+			printf("\tWARNING\n  Fail action\n");
+			break;
+	}
+}
+
+char *replace(char *string, int old_char, int new_char) // Заменяем символы в текста
+{
+	char *return_string;
+	int length = strlen(string);
+	for(return_string = string; *return_string ; return_string++)
+    {
+       if(*return_string == old_char) 
+           *return_string = new_char;
+    }
+    return return_string;
+}
+
+int check_current_of_user_name(char *new_user_name) // Проверка что имя не пустое
+{
+	int check_process_result = 0,
+		word_letter_index;
+	char letters_list_to_check[] = {
+		'q','w','e','r','t','y',
+		'u','i','o','p','a','s',
+		'd','f','g','h','j','k',
+		'l','z','x','c','v','b',
+		'n','m','Q','W','E','R',
+		'T','Y','U','I','O','P',
+		'A','S','D','F','G','H',
+		'J','K','L','Z','X','C',
+		'V','B','N','M','\0'}, **ptr; // Массив букв для проверка
+	for(word_letter_index = 0; word_letter_index < strlen(new_user_name); word_letter_index++) // Проходимся по символам имени
+	{			
+		for (int letter = 0; letter < 54; letter++)
+		{
+			if (new_user_name[word_letter_index] == letters_list_to_check[letter]) // Если есть совпадение хоть 1 буквы - имя подходит
+			{
+				printf("Name is correct!\n");
+				check_process_result = 1;
+				break;
+			}
+		}
+		if(check_process_result == 1)
+			break;
+		
+		
+	}
+	return check_process_result;
+
+}
+
 void user_registration() // регистрация пользователя в системе
 {
 	clear();
-	char *name;
+	char name[size];
+	char mass[size];
 	int exit_value = 0;
+	printf("-- Lenght of name <32 simbols! --\n");
 	printf("Enter your name: ");
 	
-	scanf("%s", name);
-	strcpy(customer_name, name);
-	if (strcmp(customer_name, "") == 0)
+	
+	fgets(name, size, stdin); // При вводе и нажатии Enter, его тоже сохраняет в строке
+	
+	replace(name, '\n', '\0'); // Заменяем Enter на пустоту
+	
+	strcpy(customer_name, name); // Передаем введеное имя в глобальную переменную
+	if (check_current_of_user_name(customer_name) == 0)
 	{
-		printf("\tWARNING!!!\n  Please, set your name\n");
+		error_message(1);
 		sleep(2);
 		user_registration();
 	}
@@ -70,11 +140,12 @@ void display_start_user_menu() // вывод стартового меню
 	while(exit_value == 0)
 	{
 		printf("Enter your choice:\n");
-		printf("-1-Enter customer name. (your active name is: %s)\n", customer_name);
+		printf("-1-Enter customer name. (your active name is: %s) \n", customer_name);
 		printf("-2-Start game.\n");
 		printf("-0-Exit.\n");
 		printf("take number: ");
 		scanf("%s", customer_number_choice);
+		getchar(); // Вытаскиваем символ из буффера программы
 		if (strcmp(customer_number_choice, "1") == 0) // проверка что введена 1
 		{
 			printf("Name enter\n");
@@ -86,7 +157,7 @@ void display_start_user_menu() // вывод стартового меню
 		{
 			if (strcmp(customer_name, "") == 0)
 			{
-				printf("\tWARNING!!!\n  Please, set your name\n");
+				error_message(1);
 				sleep(2);
 			}
 			else
@@ -105,7 +176,7 @@ void display_start_user_menu() // вывод стартового меню
 			exit(0);
 		} else // при некорректном вводе
 		{
-			perror("\n\tWARNING\n Number Enter Error\n");
+			error_message(2);
 			sleep(2);
 		}
 		clear();
